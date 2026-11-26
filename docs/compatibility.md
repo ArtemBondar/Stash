@@ -2,6 +2,21 @@
 
 ## Phase 0A probe — 2026-11-26
 
+### Retry after tool setup
+
+The Android CLI skill is now installed and was consulted. `android --no-metrics -V` reports **1.1.16919734**; `android --no-metrics info` identifies the existing Android SDK, and `android --no-metrics emulator list` lists `Pixel_10`. These commands required access outside the sandbox to the CLI cache lock. `android --no-metrics sdk list` succeeded; its listing showed `cmdline-tools/latest` with an unknown installed version. `xcodebuild -checkFirstLaunchStatus` now exits 0.
+
+In `/private/tmp/stash-kt-probe`, the project's `./kotlin --version` and installed launcher reported **0.14.0**. With `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli` and `KOTLIN_CLI_NO_WELCOME_BANNER=1`, the following scoped commands completed successfully:
+
+| Command | Result |
+| --- | --- |
+| `./kotlin build -m desktopApp` | Generated desktop application build passed. |
+| `./kotlin build -m androidApp` | Generated Android application build passed. No device or instrumentation tests were run. |
+| `./kotlin build -m webApp` | Generated Wasm web application build passed. It was not tested in a browser or offline. |
+| `./kotlin test -m shared -p jvm` | Three generated smoke tests passed. |
+
+The combined `./kotlin build` reported compilation of shared and iOS code for `iosArm64` and `iosSimulatorArm64`, but it was interrupted after more than two minutes without completing. A scoped `./kotlin build -m iosApp` was interrupted after 30 seconds without output; neither is an iOS build pass. A Compose compiler KLIB loader warning appeared during the combined build. These results only cover the disposable generated project; Room/KSP, iOS extension and signing, native integrations, browser behavior, packaging and server tests remain unverified. Toolchain provisioning accessed normal user caches. **0A remains open and the build-system choice remains provisional.**
+
 Status: **in progress**. The results below supersede the planning-time CLI observations where they differ. No Stash application code or dependency tuple has been built.
 
 | Probe | Observed result |
