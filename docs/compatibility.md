@@ -1,5 +1,23 @@
 # Compatibility and CLI evidence
 
+## Phase 0A probe — 2026-11-26
+
+Status: **in progress**. The results below supersede the planning-time CLI observations where they differ. No Stash application code or dependency tuple has been built.
+
+| Probe | Observed result |
+| --- | --- |
+| Kotlin Toolchain launcher | With `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli`, `kotlin --version` bootstrapped successfully outside the sandbox: **0.14.0** (95a1580, 2026-11-16). Network and cache access were required. |
+| Four-target generation | `kotlin new /private/tmp/stash-kt-probe --project-id=org.example.stashprobe --target-platform=desktop --target-platform=android --target-platform=ios --target-platform=web --agent=codex --no-git` succeeded in a disposable directory. |
+| Four-target build | `kotlin build` failed because Xcode first-launch setup is incomplete. The command also reported missing Android command-line tools and attempted provisioning. No target from this invocation is claimed as passed. |
+| Desktop build | From the disposable project, `kotlin build -m desktopApp` passed and compiled the generated shared and desktop JVM targets. |
+| Shared JVM tests | From that project, `kotlin test -m shared -p jvm` passed **3 generated smoke tests, 0 failures**. These are not Stash behavior or persistence tests. |
+| Gradle baseline | Cached Gradle 9.4.1 ran an empty offline Java build with a temporary Gradle user home outside the sandbox. Its compilation and tests had no source; this proves startup only. |
+| Android CLI | Modern `android` and `sdkmanager` were not found; `adb version` reported 37.0.1. |
+
+The Toolchain commands used `KOTLIN_CLI_NO_WELCOME_BANNER=1` and the temporary bootstrap cache above. The Toolchain also provisioned Gradle, Temurin JDK 25 and test dependencies in its normal user cache. Sandbox execution initially failed on network DNS and Gradle file-lock socket access; the successful checks used approved elevated execution.
+
+**Decision remains open:** this is a useful desktop smoke result, not enough evidence to choose the Alpha Toolchain over Gradle. Room/KSP, persistent storage tests, Android instrumentation, iOS extension/App Groups, web worker bundling, desktop native integrations, packaging, CI and server tests remain unverified. The Xcode setup needs `sudo xcodebuild -runFirstLaunch` outside this investigation; no privileged setup was performed. Complete the remaining 0A probes before locking the build system.
+
 Checked 2026-11-26. **Documentation compatibility is partially established; application build compatibility is unverified.** The repository has no source, build definitions, wrapper or tests. No project builds/tests were run, no skeleton was generated and no tools/skills were installed in this planning task.
 
 ## Local environment: observed results
