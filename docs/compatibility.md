@@ -1,5 +1,42 @@
 # Compatibility and CLI evidence
 
+## Phase 0A probe — 2026-11-26
+
+### Retry after tool setup
+
+**iOS follow-up:** From `/private/tmp/stash-kt-probe`, `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli KOTLIN_CLI_NO_WELCOME_BANNER=1 ./kotlin build -m iosApp` completed successfully outside the sandbox after approximately 90 seconds. It produced Debug-iphoneos and Debug-iphonesimulator app bundles. The toolchain disabled signing (`CODE_SIGNING_ALLOWED=NO`) because no `DEVELOPMENT_TEAM` was configured. `xcrun devicectl list devices` showed no physical iPhone. This verifies the generated unsigned skeleton build only: device installation, signing, simulator execution, Share Extension and Stash features remain untested. This successful follow-up supersedes the interrupted iOS attempts below.
+
+**Simulator follow-up:** Booted an iPhone 17 Pro simulator running iOS 26.5, installed the generated Debug simulator app with `simctl`, and launched `org.example.stashprobe`. The generated Compose starter screen appeared. From the probe directory, `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli KOTLIN_CLI_NO_WELCOME_BANNER=1 ./kotlin test -m shared -p iosSimulatorArm64` passed all 3 generated tests. The linker emitted cache `could not open` warnings despite the successful test result. This supersedes the earlier simulator-execution limitation; physical iPhone signing/install and Stash capture/Share Extension remain untested.
+
+The Android CLI skill is now installed and was consulted. `android --no-metrics -V` reports **1.1.16919734**; `android --no-metrics info` identifies the existing Android SDK, and `android --no-metrics emulator list` lists `Pixel_10`. These commands required access outside the sandbox to the CLI cache lock. `android --no-metrics sdk list` succeeded; its listing showed `cmdline-tools/latest` with an unknown installed version. `xcodebuild -checkFirstLaunchStatus` now exits 0.
+
+In `/private/tmp/stash-kt-probe`, the project's `./kotlin --version` and installed launcher reported **0.14.0**. With `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli` and `KOTLIN_CLI_NO_WELCOME_BANNER=1`, the following scoped commands completed successfully:
+
+| Command | Result |
+| --- | --- |
+| `./kotlin build -m desktopApp` | Generated desktop application build passed. |
+| `./kotlin build -m androidApp` | Generated Android application build passed. No device or instrumentation tests were run. |
+| `./kotlin build -m webApp` | Generated Wasm web application build passed. It was not tested in a browser or offline. |
+| `./kotlin test -m shared -p jvm` | Three generated smoke tests passed. |
+
+The combined `./kotlin build` reported compilation of shared and iOS code for `iosArm64` and `iosSimulatorArm64`, but it was interrupted after more than two minutes without completing. A scoped `./kotlin build -m iosApp` was interrupted after 30 seconds without output; neither is an iOS build pass. A Compose compiler KLIB loader warning appeared during the combined build. These results only cover the disposable generated project; Room/KSP, iOS extension and signing, native integrations, browser behavior, packaging and server tests remain unverified. Toolchain provisioning accessed normal user caches. **0A remains open and the build-system choice remains provisional.**
+
+Status: **in progress**. The results below supersede the planning-time CLI observations where they differ. No Stash application code or dependency tuple has been built.
+
+| Probe | Observed result |
+| --- | --- |
+| Kotlin Toolchain launcher | With `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli`, `kotlin --version` bootstrapped successfully outside the sandbox: **0.14.0** (95a1580, 2026-11-16). Network and cache access were required. |
+| Four-target generation | `kotlin new /private/tmp/stash-kt-probe --project-id=org.example.stashprobe --target-platform=desktop --target-platform=android --target-platform=ios --target-platform=web --agent=codex --no-git` succeeded in a disposable directory. |
+| Four-target build | `kotlin build` failed because Xcode first-launch setup is incomplete. The command also reported missing Android command-line tools and attempted provisioning. No target from this invocation is claimed as passed. |
+| Desktop build | From the disposable project, `kotlin build -m desktopApp` passed and compiled the generated shared and desktop JVM targets. |
+| Shared JVM tests | From that project, `kotlin test -m shared -p jvm` passed **3 generated smoke tests, 0 failures**. These are not Stash behavior or persistence tests. |
+| Gradle baseline | Cached Gradle 9.4.1 ran an empty offline Java build with a temporary Gradle user home outside the sandbox. Its compilation and tests had no source; this proves startup only. |
+| Android CLI | Modern `android` and `sdkmanager` were not found; `adb version` reported 37.0.1. |
+
+The Toolchain commands used `KOTLIN_CLI_NO_WELCOME_BANNER=1` and the temporary bootstrap cache above. The Toolchain also provisioned Gradle, Temurin JDK 25 and test dependencies in its normal user cache. Sandbox execution initially failed on network DNS and Gradle file-lock socket access; the successful checks used approved elevated execution.
+
+**Decision remains open:** this is a useful desktop smoke result, not enough evidence to choose the Alpha Toolchain over Gradle. Room/KSP, persistent storage tests, Android instrumentation, iOS extension/App Groups, web worker bundling, desktop native integrations, packaging, CI and server tests remain unverified. The Xcode setup needs `sudo xcodebuild -runFirstLaunch` outside this investigation; no privileged setup was performed. Complete the remaining 0A probes before locking the build system.
+
 Checked 2026-11-26. **Documentation compatibility is partially established; application build compatibility is unverified.** The repository has no source, build definitions, wrapper or tests. No project builds/tests were run, no skeleton was generated and no tools/skills were installed in this planning task.
 
 ## Local environment: observed results
