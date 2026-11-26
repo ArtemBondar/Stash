@@ -1,0 +1,91 @@
+# Compatibility and CLI evidence
+
+Checked 2026-11-26. **Documentation compatibility is partially established; application build compatibility is unverified.** The repository has no source, build definitions, wrapper or tests. No project builds/tests were run, no skeleton was generated and no tools/skills were installed in this planning task.
+
+## Local environment: observed results
+
+| Check actually executed | Result | Consequence |
+| --- | --- | --- |
+| `uname -ms`, `sw_vers` | Darwin arm64; macOS 27.2.1 | This host cannot establish Windows/Linux native integration or packaging support. |
+| `java -version`, `/usr/libexec/java_home -V` | Default Oracle JDK 22.0.2; registered JDK 16.0.2 also present | Neither is a pinned project toolchain. Proposed Gradle runtime JDK 21 needs provisioning if selected. |
+| Android Studio bundled `java -version` | OpenJDK 25.0.4 | Present, but not evidence that project Gradle/plugins support this runtime. |
+| `command -v gradle kotlinc`, cache file inventory | Neither on PATH; cached Gradle 9.1.0/9.4.1 and Kotlin/Native distributions exist | Caches do not replace a project wrapper or prove compatibility. |
+| `xcode-select -p`, `xcodebuild -version`, `xcodebuild -showsdks`, `swift --version` | Xcode 27.2; iOS/simulator/macOS 27.2 SDKs; Swift 6.4.2. SDK inventory emitted cache/file-event warnings. | Apple SDKs are present; compiler compatibility, signing, entitlements and device execution remain untested. |
+| Android SDK directory inventory | Android Studio and SDK installed; platforms 29–37.0, build-tools through 36.0.0; license files exist | File presence does not prove a successful build, accepted terms for every package or a functioning device. |
+| `command -v sdkmanager avdmanager`; direct path checks | Absent; `cmdline-tools/latest` contains only installer metadata | Repair modern CLI/package management in 0A; do not assume the empty directory is an installed tool. |
+| `adb version` | ADB 1.0.41, platform-tools 37.0.1 | Executable works; no device connection, install or instrumentation test was attempted. |
+| Absolute-path `emulator -version` | Failed: incompatible processor; required feature `neon` | Emulator is not validated on this host. Diagnose binary/host compatibility; use a physical device where needed. Do not mask this failure with a passing file-presence check. |
+| `node --version` | Node 25.8.0 | Browser build/test runtime is not pinned. Use the selected build tool's supported Node version. |
+| `docker --version`, `docker info --format '{{.ServerVersion}}'` | Docker CLI 29.3.1; daemon connection failed because socket is absent | PostgreSQL/container integration tests cannot currently run through Docker. |
+
+No SDK installation/update, emulator launch, device mutation, network service startup or signing change was performed.
+
+## Kotlin Toolchain CLI: can we use it?
+
+**Yes, as a candidate for phase 0; adoption is conditional.** JetBrains documents a unified CLI for KMP creation/build/test/run and declarative `project.yaml`/`module.yaml` configuration. It is Alpha. It is a different build workflow from running standalone `kotlinc`, and it is not just a Gradle alias. See [Kotlin's Toolchain guide](https://kotlinlang.org/docs/multiplatform/kotlin-toolchain.html) and the [Toolchain CLI reference](https://kotlin-toolchain.org/latest/cli/).
+
+Local inspection found `/Users/artembondar/.local/bin/kotlin`. Its launcher pins **Toolchain 0.14.0** and a distribution checksum. Both `kotlin --version` and `kotlin --help` failed before launching: creating `~/Library/Caches/JetBrains` was denied by the sandbox. That cache directory is absent. This proves the launcher exists, not that the runtime is downloaded or usable. No permission was requested merely to finish planning.
+
+The launcher supports `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR`; a future feasibility run can use an authorized writable cache, or approved normal cache access. First run downloads the runtime. Inspect/record that behavior and pin the project wrapper; do not automatically update the user's global launcher or shell settings. Start with version/help; do not run project creation inside this repository during planning.
+
+Toolchain has documented [Room/KSP configuration](https://kotlin-toolchain.org/latest/user-guide/builtin-tech/ksp/room/), including per-platform schema output to avoid concurrent writes. That is evidence of integration support, not proof of our complete stack. The [FAQ](https://kotlin-toolchain.org/latest/faq/) and tutorial differ in describing web execution: verify against the pinned version rather than assuming web `run` parity.
+
+0A must prove these capabilities before choosing Toolchain:
+
+1. Shared coroutine tests and real database/migration tests on JVM, Android, iOS and browser targets; machine-readable failures usable in CI.
+2. Room/KSP generation, schema export and Wasm worker/resource bundling on the selected versions.
+3. Android share activity/instrumentation and native iOS Share Extension, App Group entitlements and extension-safe linking.
+4. Desktop native shortcut integration and installable distributions on macOS/Windows/Linux.
+5. Reproducible wrapper/provisioning, server tests and the small amount of custom build work needed for web offline assets.
+
+If a required capability lacks a maintainable supported route, use Gradle. Keep only one authoritative build configuration. The architecture does not depend on either build system.
+
+## Android CLI and skills: can we use them?
+
+**Yes.** Google's modern Android CLI provides SDK/device/emulator operations, documentation lookup, testing/profiling and skills integration. It complements KMP/Gradle or Toolchain; it does not establish cross-platform build support. See the [official overview](https://developer.android.com/tools/agents/android-cli).
+
+`command -v android` returned no executable; `~/.local/bin/android` is absent. A legacy `sdk/tools/android` file exists but is not proof of the modern CLI. Google's SDK-manager and AVD-manager pages now direct users to modern [SDK commands](https://developer.android.com/tools/sdkmanager) and [emulator commands](https://developer.android.com/tools/avdmanager).
+
+During 0A, install a verified macOS arm64 release only when tool setup is in scope, record the version and use `android --no-metrics` for task commands. Inspect help before scripting. Check `android info`, `android sdk list` and device/emulator availability against the existing SDK; avoid unrequested global updates. Keep `adb` for explicit device operations. Do not use an Android-only generator to replace the KMP layout.
+
+Skill findings:
+
+| Skill/source | Verified status | Planned use |
+| --- | --- | --- |
+| Local `i-have-adhd` | Found and read; active for communication | Next action first, small numbered steps, visible completion, one next task. |
+| Official [Android CLI skill](https://github.com/android/skills/blob/main/devtools/android-cli/SKILL.md) and [android/skills](https://github.com/android/skills) | Upstream skill inspected; not installed in searched local skill roots | Use for CLI/device/docs work once setup is requested. Official docs provide `android init`, `android skills list` and selected skill installation. Review generated changes to agent instructions before accepting them. |
+| Official [Kotlin agent skills](https://github.com/Kotlin/kotlin-agent-skills) | Repository verified; no matching local Kotlin/Android skills found | Select relevant skills for concrete work, such as AGP 9 migration or native build performance; inspect before installing. |
+| Dedicated Kotlin Toolchain skill | Kotlin's guide mentions one, but the inspected official `skills` listing did not include it; search found a contribution/PR, not verified merged availability | Recheck upstream in 0A. Do not claim a dedicated official skill is installed or adopt an unverified third-party equivalent. Toolchain documentation is sufficient to plan the probe. |
+
+Only availability/relevance was evaluated. No plugin/skill installer, `android init` or generator was run.
+
+## Technology compatibility: documented support and required proof
+
+| Technology | Current official evidence | Recommendation / build gate |
+| --- | --- | --- |
+| KMP and Compose | Android/iOS/JVM desktop stable; Wasm/web Beta. [Platform stability](https://kotlinlang.org/docs/multiplatform/supported-platforms.html) | Suitable candidate for shared logic/main UI. Test browser accessibility, cold startup and native capture independently. |
+| Kotlin/Gradle/AGP/Xcode | Kotlin 2.4.21 table lists Gradle 7.6.3–9.7.0, AGP 8.5.2–9.3.1, Xcode 26.4. [KMP compatibility](https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html) | Installed Xcode 27.2 is outside that documented pairing. A matching SDK/toolchain or a successful explicitly recorded compatibility probe is needed. Do not suppress warnings and call it supported. |
+| Gradle candidate | [AGP 9.3 notes](https://developer.android.com/build/releases/agp-9-3-0-release-notes) require Gradle 9.5.0, JDK >=17, build-tools 36.0.0. [Gradle JVM matrix](https://docs.gradle.org/current/userguide/compatibility.html) governs runtime choice. | Proposed experiment: Kotlin 2.4.21, Compose 1.12.2, AGP 9.3.1, Gradle 9.5.0, JDK 21. This is a candidate intersection, not a tested dependency lock. |
+| Compose compiler/OS reach | [Compose compatibility](https://kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html) lists 1.12.2 and requires compiler plugin version equal to Kotlin. Current table lists macOS 13 arm64, Windows 10 x64/arm64, Ubuntu 20.04 x64/arm64 and WasmGC browsers. | Confirm required hardware/OS reach; Intel Mac support must not be assumed. Combined library minimums may be higher. Agree/document minimums before release. |
+| Android KMP plugin | Google documents `com.android.kotlin.multiplatform.library`, AGP >=8.10. [Plugin setup](https://developer.android.com/kotlin/multiplatform/plugin) | Gradle route uses a separate Android application module and KMP library plugin. Verify resources, tests and KSP; avoid obsolete scaffold patterns. Toolchain owns its own integration settings. |
+| Room/SQLite | [Room 3](https://developer.android.com/jetpack/androidx/releases/room3) lists stable 3.0.3 and JS/Wasm support; its worker integration is not turnkey. [Room 2](https://developer.android.com/jetpack/androidx/releases/room) stable 2.8.5 remains another candidate. | Prefer a stable release; current [KMP setup example](https://developer.android.com/kotlin/multiplatform/room) uses 3.1 alpha, so do not copy versions blindly. Probe Room 3.0.3/SQLite 2.7.1 and a separate IndexedDB adapter. |
+| KSP | [KSP KMP guide](https://kotlinlang.org/docs/ksp-multiplatform.html) demonstrates Kotlin 2.4.21/KSP 2.3.12 with Room 3.0.3 | Gradle route configures processors per target; catch-all `ksp(...)` is invalid in current KMP. Build and compare generated schemas. |
+| SQLDelight alternative | [SQLDelight 2.1 JS driver](https://sqldelight.github.io/sqldelight/2.1.0/js_sqlite/) documents worker-backed browser SQL | Does not by itself prove persistent storage or Kotlin/Wasm wiring. Adopt only if the same persistence probes show less maintenance than Room/IndexedDB. |
+| Coroutines/serialization | [Coroutine tests](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/) expose Native/JS/Wasm targets; [serialization JSON](https://kotlinlang.org/docs/serialization.html) is multiplatform/stable | Compile/run selected runtime versions on every target. Serialization runtime versions are independent of Kotlin; verify plugin/runtime together. |
+| Ktor Client/server | [Client engines](https://ktor.io/docs/client-engines.html) document JVM/Android/Native/JS/Wasm (docs show 3.6.2) | Candidate 3.6.2; prove selected engines on real targets, cancellation/TLS, browser cookies/CORS and test transport. Keep server dependencies JVM-only. |
+| Koin/navigation | [Koin targets](https://insert-koin.io/docs/reference/koin-core/kmp-setup/) include JS/Wasm. [Compose Navigation](https://kotlinlang.org/docs/multiplatform/compose-navigation.html) documents shared routes; current example uses an RC. | Constructor injection initially; add Koin only where wiring benefits. Select tested stable Navigation artifacts when routes are needed; verify deep links/history/back/focus. Neither belongs in the capture critical path. |
+| PostgreSQL/Exposed/Flyway | [Exposed JDBC](https://www.jetbrains.com/help/exposed/transactions.html) blocks; [Flyway](https://documentation.red-gate.com/flyway/reference/database-driver-reference/postgresql-database) needs separate PostgreSQL support and lists version 18 verified; [PostgreSQL FTS](https://www.postgresql.org/docs/current/textsearch.html) is available | Prefer a supported PostgreSQL 18 patch candidate over assuming newly released 19 is verified by Flyway. Pin the server tuple in 2A, then run real migrations, rollback/ownership/concurrency and restore tests. No server compatibility claim yet. |
+
+Version locks must record exact artifacts, transitive/target variants, wrapper checksums and tested host/SDKs. A Toolchain selection must use its documented supported version controls; do not apply Gradle's candidate tuple blindly to its managed defaults.
+
+## Required build evidence before a target is called supported
+
+| Target | Future evidence to record |
+| --- | --- |
+| JVM desktop | Shared tests and persistent reopen/transaction tests; native capture/packaging on macOS, Windows, Linux and Wayland where applicable. |
+| Android | APK build, unit and instrumented tests, share with app stopped, device latency; record SDK/device/API and actual commands. |
+| iOS | Simulator build/tests plus physical-device Share Extension/App Group/signing, termination recovery and capture latency. |
+| Web | Production Wasm bundle and browser tests in Chromium/Firefox/Safari; offline reload, transaction/reopen/multi-tab/quota, accessibility and clipboard restrictions. |
+| Server | JVM tests plus PostgreSQL integration/migration/tenant/sync/restore tests through a working container runtime or documented local equivalent. |
+
+Discover task names from the selected tool's help/task inventory when the skeleton exists. Do not present hypothetical `./gradlew` or `./kotlin` commands as commands already run. An unavailable target stays explicitly unverified.
