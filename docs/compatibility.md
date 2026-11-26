@@ -4,6 +4,8 @@
 
 ### Retry after tool setup
 
+**iOS follow-up:** From `/private/tmp/stash-kt-probe`, `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli KOTLIN_CLI_NO_WELCOME_BANNER=1 ./kotlin build -m iosApp` completed successfully outside the sandbox after approximately 90 seconds. It produced Debug-iphoneos and Debug-iphonesimulator app bundles. The toolchain disabled signing (`CODE_SIGNING_ALLOWED=NO`) because no `DEVELOPMENT_TEAM` was configured. `xcrun devicectl list devices` showed no physical iPhone. This verifies the generated unsigned skeleton build only: device installation, signing, simulator execution, Share Extension and Stash features remain untested. This successful follow-up supersedes the interrupted iOS attempts below.
+
 The Android CLI skill is now installed and was consulted. `android --no-metrics -V` reports **1.1.16919734**; `android --no-metrics info` identifies the existing Android SDK, and `android --no-metrics emulator list` lists `Pixel_10`. These commands required access outside the sandbox to the CLI cache lock. `android --no-metrics sdk list` succeeded; its listing showed `cmdline-tools/latest` with an unknown installed version. `xcodebuild -checkFirstLaunchStatus` now exits 0.
 
 In `/private/tmp/stash-kt-probe`, the project's `./kotlin --version` and installed launcher reported **0.14.0**. With `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR=/private/tmp/stash-kotlin-cli` and `KOTLIN_CLI_NO_WELCOME_BANNER=1`, the following scoped commands completed successfully:
