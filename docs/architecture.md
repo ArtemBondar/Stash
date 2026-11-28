@@ -1,8 +1,10 @@
 # Stash architecture decisions
 
-Status: proposed design · 2026-11-26 · no application exists yet.
+Status: initial native offline capture slice implemented and simulator-tested · 2026-11-28.
 
-The repository currently contains only `.gitignore`, AGENTS.md, PRODUCT_SPEC.md and CODEX_START.md. This is an evaluation of the proposed architecture, not a review of implemented code. Read the execution order in [development-plan.md](development-plan.md) and evidence in [compatibility.md](compatibility.md).
+The first application slice uses Kotlin Multiplatform, Compose and Room for native link/text capture and a minimal Inbox. The broader design below remains the target architecture; synchronization, web storage and external capture entry points are not implemented by this slice. Read the execution order in [development-plan.md](development-plan.md) and actual platform evidence in [compatibility.md](compatibility.md).
+
+The native implementation keeps `Capture`, classification, draft retry identity and `CaptureStore` independent of Room. `RoomCaptureStore` maps those values to persistence rows and commits the item/outbox pair transactionally. A fixed local profile is the only implemented partition; it is not authentication or proof of account isolation. The Compose screen owns its save coroutine, acknowledges only a completed store call and retains edits made during that call. Platform entry points own and close their database. The minimal Inbox reloads from storage after a save; observation across external writers is deferred until those entry points exist.
 
 ## 1. Share behavior; isolate platform ownership
 
@@ -85,7 +87,7 @@ Server extraction jobs should live in the modular monolith with durable PostgreS
 
 ## Decisions still open
 
-1. **Build system:** Kotlin Toolchain CLI is an Alpha candidate; Gradle remains the baseline until 0A proves the complete workflow. Android CLI complements either choice. CLI/skills setup must not overwrite project requirements.
+1. **Build system:** Use Kotlin Toolchain as the primary choice and Gradle as the fallback, following the user's direction. Toolchain is Alpha; validate target builds, tests and integrations before claiming support. Android CLI complements either choice. CLI/skills setup must not overwrite project requirements.
 2. **Storage and web reach:** Room native/web versus Room native + IndexedDB, OS/CPU/browser minimums, Wayland behavior and a possible web fallback depend on probes. Scope reductions require discussion.
 3. **Data policy:** E2EE is unresolved and conflicts with transparent server extraction/search; retention, guest-to-account linking and permanent deletion need explicit product decisions.
 4. **Release:** private/self-hostable personal use first, tenant isolation from the first server endpoint. Commercial model and name/trademark clearance remain unresolved. No publishing authorized.
