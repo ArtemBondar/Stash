@@ -100,7 +100,9 @@ The native Inbox reads the fixed local partition in chronological order and filt
 
 ### Adaptive Inbox and inline capture
 
-The shared screen stacks capture, search, and results in one scrolling list below 720 dp of available width. At wider sizes, capture and Inbox scroll independently side by side. Draft and query state stay above the layout switch. The Compose-only Android activity handles size changes directly so resizing does not discard that state. The inline editor uses a modified Enter shortcut and leaves ordinary Enter available for multiline input. Capture still saves locally before showing confirmation.
+The shared Inbox and inline capture follow the [Stash design system](design-system.md). Material 3 controls use Stash’s colors and follow the system light or dark preference.
+
+The shared screen stacks capture, search, and results in one scrolling list below 720 dp of available width. At wider sizes, capture, Inbox previews, and a detail pane scroll independently side by side. The detail pane shows the full original capture from the current local results. Draft, query, and selected capture ID stay above the layout switch. A successful search clears the selection if the selected item is outside the results. Pending and failed reads hide the details until the current results are available. The Compose-only Android activity handles size changes directly so resizing does not discard that state. The inline editor uses a modified Enter shortcut and leaves ordinary Enter available for multiline input. Capture still saves locally before showing confirmation.
 
 ### Standalone desktop quick capture
 
