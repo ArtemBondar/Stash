@@ -1,6 +1,8 @@
 package org.example.stash
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -68,7 +70,7 @@ internal class QuickCaptureSession(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            error = "Could not save: ${e.message}"
+            error = "Could not save. Please try again."
             false
         } finally {
             saving = false
@@ -102,7 +104,7 @@ internal fun QuickCapture(session: QuickCaptureSession, close: () -> Unit) {
                     }
                     else -> false
                 }
-            }) {
+            }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = value,
                     onValueChange = { value = it; session.edit(it.text) },
@@ -110,8 +112,9 @@ internal fun QuickCapture(session: QuickCaptureSession, close: () -> Unit) {
                     readOnly = session.saving,
                     modifier = Modifier.fillMaxWidth().weight(1f).focusRequester(focus),
                 )
+                Text("Enter to save · Shift+Enter for a new line · Esc to close", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 session.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                Button(onClick = save, enabled = !session.saving) { Text(if (session.saving) "Saving…" else "Save") }
+                Button(onClick = save, enabled = !session.saving, modifier = Modifier.defaultMinSize(minHeight = 48.dp)) { Text(if (session.saving) "Saving…" else "Save to Inbox") }
             }
         }
     }
