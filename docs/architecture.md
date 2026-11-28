@@ -107,3 +107,5 @@ The shared screen stacks capture, search, and results in one scrolling list belo
 ### Standalone desktop quick capture
 
 The desktop application's `--quick-capture` argument opens a small Compose window with no Inbox view. It uses the same Room database, local profile and capture transaction as the library. The window closes after the save returns successfully and defers cancellation during the write. On failure, it retains the draft and reuses its capture identity when retrying the same text. Tray and global shortcut launchers are part of Phase 1D.
+
+The Inbox and standalone desktop quick-capture window share the same Material color schemes and follow the system appearance. Each entry point provides a themed surface so its background and foreground change together; there is no in-app appearance override yet.
