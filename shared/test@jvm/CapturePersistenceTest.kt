@@ -31,6 +31,27 @@ class CapturePersistenceTest {
             directory.toFile().deleteRecursively()
         }
     }
+    @Test fun searchUsesLiteralUnicodeSubstringAndLocalPartitionAfterReopen() = runBlocking {
+        val directory = Files.createTempDirectory("stash-search")
+        val path = directory.resolve("stash.db").toString()
+        fun open() = Room.databaseBuilder<StashDatabase>(path).setDriver(BundledSQLiteDriver()).build()
+        val items = listOf(
+            Capture("1", "Café 100%_done https://example.org/Path", CaptureKind.NOTE, 1),
+            Capture("2", "other", CaptureKind.NOTE, 2),
+            Capture("3", "Café hidden", CaptureKind.NOTE, 3, "another")
+        )
+        fun check(store: CaptureStore) = runBlocking {
+            assertEquals(listOf(items[1], items[0]), store.items(""))
+            for (query in listOf("CAFÉ", "%_", "example.org/path")) assertEquals(listOf(items[0]), store.items(query))
+            assertEquals(emptyList(), store.items("%missing_"))
+        }
+        val first = open()
+        items.forEach { RoomCaptureStore(first).capture(it) }
+        check(RoomCaptureStore(first))
+        first.close()
+        val reopened = open()
+        try { check(RoomCaptureStore(reopened)) } finally { reopened.close(); directory.toFile().deleteRecursively() }
+    }
     @Test fun failedOutboxInsertRollsBackItem() = runBlocking {
         val directory = Files.createTempDirectory("stash-rollback")
         val path = directory.resolve("stash.db").toString()

@@ -1,5 +1,8 @@
 package org.example.stash
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -34,4 +37,26 @@ class CaptureTest {
         assertEquals("", draft.text)
     }
 
+    @Test fun newerInboxReadWinsWhenOlderReadCompletesLast() = runBlocking {
+        val generation = InboxReadGeneration()
+        val oldResult = CompletableDeferred<String>()
+        val newResult = CompletableDeferred<String>()
+        var displayed = ""
+        val oldRequest = generation.snapshot()
+        val oldRead = launch {
+            val result = oldResult.await()
+            generation.applyIfCurrent(oldRequest) { displayed = result }
+        }
+        generation.invalidate()
+        val newRequest = generation.snapshot()
+        val newRead = launch {
+            val result = newResult.await()
+            generation.applyIfCurrent(newRequest) { displayed = result }
+        }
+        newResult.complete("new")
+        newRead.join()
+        oldResult.complete("old")
+        oldRead.join()
+        assertEquals("new", displayed)
+    }
 }
