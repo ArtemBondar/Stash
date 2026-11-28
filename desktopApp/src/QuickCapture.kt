@@ -70,7 +70,7 @@ internal class QuickCaptureSession(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            error = "Could not save. Please try again."
+            error = captureFailureMessage(e)
             false
         } finally {
             saving = false

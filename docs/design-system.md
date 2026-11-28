@@ -24,7 +24,7 @@ Older items
 
 - Compact uses one vertical feed. Wide keeps capture, search results, and the detail pane visible together. The list and detail receive more width than capture as the window grows. Future collection navigation gets its own design pass.
 - Show a clear selected row in wide mode and preserve selection through resizing while the item remains in the current results. Use a short preview in wide rows and full original text in the detail pane. Keep the compact feed readable.
-- Search and capture use persistent field labels. Capture keeps its draft on failure, disables duplicate submission during a save, and confirms success only after local persistence. Capture and search continue offline with the same controls and local data.
+- Search and capture use persistent field labels. Capture keeps its draft on failure, shows retry guidance without exposing storage exception details, disables duplicate submission during a save, and confirms success only after local persistence. Capture and search continue offline with the same controls and local data.
 - List states cover loading, empty Inbox, no matches, and read failure with Retry. Detail shows guidance before selection. A stale result should never appear as the current detail while the Inbox is loading or unavailable.
 
 ## Shared foundations

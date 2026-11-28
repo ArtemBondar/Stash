@@ -60,3 +60,11 @@ class CaptureTest {
         assertEquals("new", displayed)
     }
 }
+
+class CaptureFeedbackTest {
+    @Test fun failureGuidanceDoesNotExposeStorageDetails() {
+        val error = IllegalStateException("private/path and captured content")
+        assertEquals("Could not save. Please try again.", captureFailureMessage(error))
+        assertEquals("This capture could not be saved. Copy your text and start a new capture.", captureFailureMessage(CaptureConflict()))
+    }
+}
