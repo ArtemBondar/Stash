@@ -29,3 +29,9 @@ Inbox search runs entirely offline over original text, including URLs. It uses c
 In narrow windows, quick capture and Inbox share one scrolling view. Wider windows show them side by side. Use **Save to Inbox** or press **Ctrl+Enter** (**Command+Enter** on macOS) in the capture editor. Enter on its own can add a line to a note.
 
 The standalone desktop window opens with the editor focused. Paste or type a link or note, use **Shift+Enter** for a new line, and press **Enter** to save locally and close. **Escape** cancels. If a save fails, the window keeps the draft available to retry.
+
+## Pull requests and release candidates
+
+GitHub Actions runs the JVM tests, Android build, iOS simulator tests, and iOS simulator build when a pull request opens, reopens, or receives new commits.
+
+Once the release workflow reaches `main`, use **Actions → Release → Run workflow**, select `main`, and enter a new version such as `v0.1.0`. The workflow reruns the checks and creates a draft GitHub release for that commit with the Android debug APK and the iOS simulator app archive. Release maintainers can review the draft and publish it manually. Signed device builds, desktop installers, web deployment, and app store uploads require future packaging work.
