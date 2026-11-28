@@ -1,0 +1,10 @@
+product: ios/app
+
+dependencies:
+  - androidx.room3:room3-runtime:3.0.3
+  - androidx.sqlite:sqlite-bundled:2.7.1
+  - //shared
+  - $compose.ui
+
+settings:
+  compose: enabled

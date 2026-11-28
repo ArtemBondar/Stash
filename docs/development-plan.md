@@ -1,8 +1,8 @@
 # Stash development plan
 
-Start with **0A: CLI and build feasibility**. Do not start feature implementation until its result is recorded.
+Completed increment: **first native offline capture slice (part of 1A/1B with a minimal Inbox)**. The application saves original link/text content with an atomic outbox record, stable retry identity and retained edits. JVM tests, iOS simulator tests, Android compilation and an iOS save/terminate/relaunch check passed. Native persistence also passed the separate repository probes on JVM, iOS simulator and Android emulator. This does not complete every 1A/1B acceptance criterion: process/power interruption during commit, actionable real disk exhaustion, physical-device latency, CI and remaining target coverage still need work.
 
-Status: planning only · 2026-11-26 · no implementation authorized by this document.
+Status: native capture increment complete; offline Inbox search next · 2026-11-28. The user has authorized incremental implementation with TDD; this plan does not authorize publishing or releases.
 
 ## Read in one minute
 
@@ -12,7 +12,7 @@ Status: planning only · 2026-11-26 · no implementation authorized by this docu
 4. Add authenticated synchronization, then the offline reader and import.
 5. Package and verify every supported platform before claiming release readiness.
 
-Requirements: [AGENTS.md](../AGENTS.md), [PRODUCT_SPEC.md](../PRODUCT_SPEC.md), [CODEX_START.md](../CODEX_START.md). The user's current request overrides CODEX_START.md's implementation instruction: this change contains documentation only. Technical decisions are in [architecture.md](architecture.md); inspected tools, sources and unverified compatibility are in [compatibility.md](compatibility.md).
+Requirements: [AGENTS.md](../AGENTS.md), [PRODUCT_SPEC.md](../PRODUCT_SPEC.md), [CODEX_START.md](../CODEX_START.md). The original planning-only request was subsequently extended to incremental implementation. Technical decisions are in [architecture.md](architecture.md); inspected tools, sources and unverified compatibility are in [compatibility.md](compatibility.md).
 
 ## Working rhythm
 
@@ -34,10 +34,12 @@ Technical spikes begin with a reproducible pass/fail probe rather than fabricate
 
 | Slice | Work and first evidence | Exit condition | Initial budget |
 | --- | --- | --- | --- |
-| **0A — CLI/build feasibility** | Inspect/bootstrap the existing Kotlin Toolchain launcher in an authorized cache; verify Android CLI and official skill availability. In a separate disposable probe, compare Toolchain against Gradle for shared tests, Room/KSP schema generation, Android instrumentation, iOS extension/App Groups, Wasm resources/workers, desktop native bindings and packaging. | Record exact versions, commands, outputs and unsupported capabilities. Choose one build system. Keep Gradle as the baseline unless Toolchain passes the required probes without fragile workarounds. | 1 developer day; stop and record gaps at the limit. |
+| **0A — CLI/build feasibility** | Inspect/bootstrap the existing Kotlin Toolchain launcher in an authorized cache; verify Android CLI and official skill availability. In a separate disposable probe, validate Toolchain for shared tests, Room/KSP schema generation, Android instrumentation, iOS extension/App Groups, Wasm resources/workers, desktop native bindings and packaging. | Record exact versions, commands, outputs and unsupported capabilities. Use Toolchain as primary and Gradle as fallback; record blockers before switching. | 1 developer day; stop and record gaps at the limit. |
 | **0B — persistence proof** | Test an item + outbox transaction, injected abort, reopen, migration and search on native/JVM storage. Compare IndexedDB with Room 3 web persistence on the same cases, including multiple tabs and quota errors. Evaluate SQLDelight only if it resolves a demonstrated problem. | One persistent adapter passes per target; shared domain does not depend on a database framework. Record why the chosen approach is simplest to maintain. | 1–2 developer days. |
 | **0C — external capture proof** | Exercise desktop quick window/tray/hotkey, Android share activity, and iOS Share Extension durable handoff with the library closed. Check macOS, Windows and Linux/X11/Wayland separately. | Acknowledged input survives process termination; denied permission, unavailable shortcut or cancelled extension is handled explicitly. iOS app need not be running. | 2–3 developer days across available hosts/devices. |
 | **0D — web/UI proof** | Check Compose Wasm in Chromium, Firefox and Safari: keyboard input, IME, screen-reader semantics, browser navigation, clipboard denial, storage reopen and offline application-shell reload. Verify JS fallback feasibility only if needed. | Document minimum browser/OS/CPU coverage. Web remains a required target; any failure has a tracked resolution, never a silently dropped target. | 1 developer day. |
+
+Build-system decision: the user selected Kotlin Toolchain as primary and Gradle as fallback. Continue 0A checks for actual target builds, tests, Room/KSP, iOS extension integration and packaging. Toolchain is Alpha; document blockers and validate the fallback if it becomes necessary.
 
 Dependency order: 0A precedes implementation probes; 0B and 0C precede committing to the first capture design; 0D precedes locking the web stack. Failed probes lead to a bounded alternative or a documented blocker. Do not invent a passing result for an unavailable host. Ask before a platform/scope reduction or an irreversible decision.
 
@@ -110,4 +112,4 @@ After each reported success, terminate the relevant process and reopen storage. 
 | Synchronized self-hosted accounts, ownership, conflicts, outbox/cursors/tombstones and recovery | 2A–2D, 4A |
 | Reader/snapshots/security, exports/imports, later integrations/content and P2 work | 1E, 3A–3D, 4A–4D |
 
-**Next task, after implementation is requested:** execute 0A only and report the build-system recommendation. To review now, read that row (about one minute).
+**Next task:** add basic offline Inbox search as a small part of 1C, starting with failing tests for literal text, URL and Unicode matching. Broader platform investigations remain tracked above.

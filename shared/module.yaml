@@ -1,0 +1,36 @@
+product:
+  type: kmp/lib
+  platforms: [jvm, android, iosArm64, iosSimulatorArm64]
+dependencies:
+  - androidx.room3:room3-runtime:3.0.3
+  - androidx.sqlite:sqlite-bundled:2.7.1
+  - $compose.runtime
+  - $compose.foundation
+  - $compose.material3
+  - $compose.ui
+settings:
+  kotlin:
+    ksp:
+      processors:
+        - androidx.room3:room3-compiler:3.0.3
+  compose: enabled
+settings@jvm:
+  kotlin:
+    ksp:
+      processorOptions:
+        room.schemaLocation: ./schemas@jvm
+settings@android:
+  kotlin:
+    ksp:
+      processorOptions:
+        room.schemaLocation: ./schemas@android
+settings@iosArm64:
+  kotlin:
+    ksp:
+      processorOptions:
+        room.schemaLocation: ./schemas@iosArm64
+settings@iosSimulatorArm64:
+  kotlin:
+    ksp:
+      processorOptions:
+        room.schemaLocation: ./schemas@iosSimulatorArm64
