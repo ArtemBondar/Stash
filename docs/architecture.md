@@ -97,3 +97,7 @@ Record accepted/rejected options with evidence beside these decisions as each sl
 ### Basic offline Inbox search
 
 The native Inbox reads the fixed local partition in chronological order and filters original text in Kotlin with case-insensitive literal substring matching. This also finds URLs and treats SQL wildcard characters literally. It does not perform accent normalization, tokenization, or ranking. Reading all rows for each query favors correctness and simplicity for a small inbox; a scalable local index is future work. Query changes and committed saves invalidate older reads so late results cannot replace newer ones.
+
+### Adaptive Inbox and inline capture
+
+The shared screen stacks capture, search, and results in one scrolling list below 720 dp of available width. At wider sizes, capture and Inbox scroll independently side by side. Draft and query state stay above the layout switch. The Compose-only Android activity handles size changes directly so resizing does not discard that state. The inline editor uses a modified Enter shortcut and leaves ordinary Enter available for multiline input. Capture still saves locally before showing confirmation.

@@ -2,7 +2,7 @@
 
 Completed increment: **first native offline capture slice (part of 1A/1B with a minimal Inbox)**. The application saves original link/text content with an atomic outbox record, stable retry identity and retained edits. JVM tests, iOS simulator tests, Android compilation and an iOS save/terminate/relaunch check passed. Native persistence also passed the separate repository probes on JVM, iOS simulator and Android emulator. This does not complete every 1A/1B acceptance criterion: process/power interruption during commit, actionable real disk exhaustion, physical-device latency, CI and remaining target coverage still need work.
 
-Status: native capture and basic offline Inbox search increments complete · 2026-11-28. The user has authorized incremental implementation with TDD; this plan does not authorize publishing or releases.
+Status: native capture, basic offline Inbox search, and responsive inline capture increments complete · 2026-11-28. The user has authorized incremental implementation with TDD; this plan does not authorize publishing or releases.
 
 ## Read in one minute
 
@@ -112,4 +112,4 @@ After each reported success, terminate the relevant process and reopen storage. 
 | Synchronized self-hosted accounts, ownership, conflicts, outbox/cursors/tombstones and recovery | 2A–2D, 4A |
 | Reader/snapshots/security, exports/imports, later integrations/content and P2 work | 1E, 3A–3D, 4A–4D |
 
-**Next task:** continue the remaining adaptive Inbox and quick capture work in 1C. Broader platform investigations remain tracked above.
+**Next task:** implement the independent desktop quick capture window in 1C. Sidebar and detail, theme coverage, and web quick-add also remain part of 1C.
