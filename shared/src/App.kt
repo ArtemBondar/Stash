@@ -204,8 +204,10 @@ private fun LazyListScope.inboxContent(
     when {
         loading -> item { Text("Loading Inbox…") }
         loadFailed -> item {
-            Text("Could not load Inbox.")
-            Button(onClick = onRetry, modifier = Modifier.heightIn(min = MinimumTouchTarget)) { Text("Retry") }
+            Column(verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+                Text("Could not load Inbox.")
+                Button(onClick = onRetry, modifier = Modifier.heightIn(min = MinimumTouchTarget)) { Text("Retry") }
+            }
         }
         entries.isEmpty() -> item { Text(if (query.isEmpty()) "Your Inbox is empty." else "No matching items.") }
         else -> items(entries, key = { it.id }) { item ->
