@@ -1,5 +1,11 @@
 # Compatibility and CLI evidence
 
+## Offline Inbox search increment — 2026-11-28
+
+Search matches literal, case-insensitive substrings of original capture text and URLs within the local profile. A compiling behavioral test failed before implementation (`/private/tmp/stash-search-red-behavior.log`). Final checks passed: `./kotlin test -p jvm` (6/6), `./kotlin test -m shared -p iosSimulatorArm64` (4/4), `./kotlin build -p android` and `./kotlin build -p iosSimulatorArm64`. Real database assertions cover search before/after reopen, profile isolation, Unicode case matching, literal `%`/`_`, empty queries and no matches; a deterministic deferred-result test covers stale-result exclusion. Logs: `/private/tmp/stash-search-jvm-verified.log`, `/private/tmp/stash-search-ios-test.log`, `/private/tmp/stash-search-android-verified.log`, `/private/tmp/stash-search-ios-build.log`.
+
+The application installed and launched on the iPhone 17 Pro simulator. Interactive filtering, clearing and saving with an active filter remain unverified: the available computer-control interface could not resolve the Simulator app by name or Xcode application path. Build and automated simulator-test results above remain valid. Search currently scans local Inbox text in memory; large-Inbox performance and physical-device latency are unmeasured.
+
 ## Native application increment — 2026-11-28
 
 The root application now uses the pinned Kotlin Toolchain 0.14.0 with Room 3.0.3 and bundled SQLite 2.7.1. `./kotlin test -p jvm` passed 4/4 shared tests, covering classification and original input, retained edits and retry identity, item/outbox reopen and idempotency, intentional duplicates and injected outbox rollback. `./kotlin build -p android` passed application/shared compilation. `./kotlin build -p iosSimulatorArm64` passed, and `./kotlin test -m shared -p iosSimulatorArm64` passed 3/3 tests, including real Room reopen/retry persistence. Logs are `/private/tmp/stash-final-jvm.log`, `/private/tmp/stash-final-android.log`, `/private/tmp/stash-final-ios.log` and `/private/tmp/stash-final-ios-test.log`. Native linker cache warnings did not prevent completion.

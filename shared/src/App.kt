@@ -33,6 +33,9 @@ import kotlin.uuid.Uuid
 fun App(store: CaptureStore) {
     var text by remember { mutableStateOf("") }
     val draft = remember { CaptureDraft() }
+    var query by remember { mutableStateOf("") }
+    var refreshVersion by remember { mutableStateOf(0) }
+    val generation = remember { InboxReadGeneration() }
     var entries by remember { mutableStateOf<List<Capture>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var loadFailed by remember { mutableStateOf(false) }
@@ -40,10 +43,18 @@ fun App(store: CaptureStore) {
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    suspend fun refresh() { entries = store.items(); loadFailed = false }
-    LaunchedEffect(store) {
-        try { refresh() } catch (e: CancellationException) { throw e } catch (e: Exception) { loadFailed = true; error = "Could not load Inbox: ${e.message}" }
-        loading = false
+    LaunchedEffect(store, query, refreshVersion) {
+        val request = generation.snapshot()
+        loading = true
+        loadFailed = false
+        try {
+            val result = store.items(query)
+            generation.applyIfCurrent(request) { entries = result }
+        } catch (e: CancellationException) { throw e } catch (e: Exception) {
+            if (generation.isCurrent(request)) loadFailed = true
+        } finally {
+            if (generation.isCurrent(request)) loading = false
+        }
     }
     MaterialTheme {
         Column(Modifier.fillMaxSize().safeDrawingPadding().imePadding().padding(16.dp)) {
@@ -65,15 +76,29 @@ fun App(store: CaptureStore) {
                         saved = true
                         draft.committed(capture, savedRevision)
                         text = draft.text
-                        try { refresh() } catch (e: CancellationException) { throw e } catch (e: Exception) { loadFailed = true; error = "Saved, but could not reload Inbox: ${e.message}" }
+                        generation.invalidate()
+                        loading = true
+                        refreshVersion++
                     } catch (e: CancellationException) { throw e } catch (e: Exception) { error = "Could not save: ${e.message}" }
                     finally { saving = false }
                 }
             }) { Text(if (saving) "Saving…" else "Save to Inbox") }
             if (saved) Text("Saved locally")
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            OutlinedTextField(value = query, onValueChange = {
+                if (it != query) {
+                    query = it
+                    generation.invalidate()
+                    loading = true
+                    loadFailed = false
+                }
+            }, label = { Text("Search Inbox") }, modifier = Modifier.fillMaxWidth())
             if (loading) Text("Loading Inbox…")
-            else if (!loadFailed && entries.isEmpty()) Text("Your Inbox is empty.")
+            else if (loadFailed) {
+                Text("Could not load Inbox.")
+                Button(onClick = { generation.invalidate(); loading = true; refreshVersion++ }) { Text("Retry") }
+            }
+            else if (entries.isEmpty()) Text(if (query.isEmpty()) "Your Inbox is empty." else "No matching items.")
             else if (entries.isNotEmpty()) LazyColumn { items(entries, key = { it.id }) { item -> Text(item.text, Modifier.fillMaxWidth().padding(vertical = 8.dp)) } }
         }
     }

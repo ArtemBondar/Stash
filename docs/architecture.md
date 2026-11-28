@@ -93,3 +93,7 @@ Server extraction jobs should live in the modular monolith with durable PostgreS
 4. **Release:** private/self-hostable personal use first, tenant isolation from the first server endpoint. Commercial model and name/trademark clearance remain unresolved. No publishing authorized.
 
 Record accepted/rejected options with evidence beside these decisions as each slice completes. Documentation support is not build verification.
+
+### Basic offline Inbox search
+
+The native Inbox reads the fixed local partition in chronological order and filters original text in Kotlin with case-insensitive literal substring matching. This also finds URLs and treats SQL wildcard characters literally. It does not perform accent normalization, tokenization, or ranking. Reading all rows for each query favors correctness and simplicity for a small inbox; a scalable local index is future work. Query changes and committed saves invalidate older reads so late results cannot replace newer ones.

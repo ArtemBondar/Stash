@@ -44,7 +44,7 @@ abstract class CaptureDao {
 }
 
 class RoomCaptureStore(private val database: StashDatabase) : CaptureStore {
-    override suspend fun items(): List<Capture> = withContext(Dispatchers.Default) { database.dao().rows().map { it.toCapture() } }
+    override suspend fun items(query: String): List<Capture> = withContext(Dispatchers.Default) { database.dao().rows().filter { it.text.contains(query, ignoreCase = true) }.map { it.toCapture() } }
     override suspend fun capture(item: Capture) = withContext(Dispatchers.Default) {
         database.dao().capture(CaptureRow(item.id, item.text, item.kind, item.createdAt, item.profile))
     }

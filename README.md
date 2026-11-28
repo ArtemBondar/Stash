@@ -22,3 +22,5 @@ On Windows use `kotlin.bat` for supported targets. Run the available checks with
 ```
 
 See [PRODUCT_SPEC.md](PRODUCT_SPEC.md) for the intended product and [docs/architecture.md](docs/architecture.md) for architectural decisions and limitations.
+
+Inbox search runs entirely offline over original text, including URLs. It uses case-insensitive literal substring matching; `%` and `_` have no special meaning. It does not normalize accents or rank results. The current implementation loads the local inbox and filters it in Kotlin, which is simple but will need a scalable index for large inboxes.

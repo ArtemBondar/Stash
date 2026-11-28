@@ -15,7 +15,7 @@ fun classifyCapture(text: String): CaptureKind {
 }
 
 interface CaptureStore {
-    suspend fun items(): List<Capture>
+    suspend fun items(query: String = ""): List<Capture>
     suspend fun capture(item: Capture)
 }
 
@@ -37,4 +37,13 @@ class CaptureDraft {
         if (pending == capture) pending = null
         if (revision == savedRevision) text = ""
     }
+}
+
+// Invalidates in-flight reads as soon as the user changes the query or a save commits.
+class InboxReadGeneration {
+    private var current = 0
+    fun invalidate() { current++ }
+    fun snapshot(): Int = current
+    fun isCurrent(snapshot: Int): Boolean = snapshot == current
+    fun applyIfCurrent(snapshot: Int, update: () -> Unit) { if (isCurrent(snapshot)) update() }
 }
