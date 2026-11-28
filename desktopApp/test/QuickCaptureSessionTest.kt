@@ -10,6 +10,19 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class QuickCaptureSessionTest {
+    @Test fun writeFailureWithoutMessageOffersRetryAndRetainsDraft() = runBlocking {
+        val store = object : CaptureStore {
+            override suspend fun items(query: String) = emptyList<Capture>()
+            override suspend fun capture(item: Capture) { throw Exception() }
+        }
+        val session = QuickCaptureSession(store) { text, kind -> Capture("id", text, kind, 42) }
+        session.edit("hello")
+
+        assertFalse(session.save())
+        assertEquals("hello", session.text)
+        assertEquals("Could not save. Please try again.", session.error)
+    }
+
     @Test fun failedWriteRetainsInputAndRetryUsesSameCapture() = runBlocking {
         val writes = mutableListOf<Capture>()
         val release = CompletableDeferred<Unit>()

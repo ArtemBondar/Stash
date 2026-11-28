@@ -45,3 +45,5 @@ Older items
 - Use 8 dp gaps between related elements, 16 dp pane padding, and 48 dp minimum targets in shared screens. Use an 8 dp corner radius for selected rows. Group the interface with spacing and surface color.
 - Follow the system light or dark preference. Verify text contrast at 4.5:1 for normal text and ensure keyboard focus is visible. Give interactive rows a name, action, and selected state. Use text for save and error feedback.
 - Keep tokens semantic and use standard controls where possible. Apply the same foundations to existing screens and components incrementally. Preserve platform-specific behavior and verify the affected capture flow after each change.
+
+The standalone desktop capture window uses the same spacing, text roles, and minimum action height. Its shortcut guidance documents Enter to save, Shift+Enter for a newline, and Escape to close. A failed write keeps the draft and displays retry guidance without exposing storage exception details. Interactive resizing, keyboard, and light/dark appearance still need desktop verification.
