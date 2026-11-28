@@ -47,6 +47,14 @@ Phase 0 completion requires actual builds/tests on the selected stack, not docum
 
 ## Phase 1 — useful offline capture
 
+### Design before building screens
+
+Define Stash’s visual direction and a small design system before implementing new screens or redesigning existing ones. Start with the Inbox and quick capture. Sketch their compact and wide layouts and define the empty, offline, saving, success, and error states. Keep capture immediately available and show success only after the item is saved locally.
+
+Evaluate [Google Material 3](https://developer.android.com/develop/ui/compose/designsystems/material3) as the starting reference for themes and components. Compare it with a small Stash-specific system that follows [Apple’s Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/foundations) on Apple platforms. Record the chosen direction and where platform conventions differ.
+
+Use the [Stash design system](design-system.md) as the acceptance criteria for each UI slice. Review every existing screen and UI component against it. Update shared components first, then align existing screens and platform-specific entry points in small slices. Verify capture, keyboard and touch interaction, resizing, and light/dark appearance where affected.
+
 | Slice | Write these failing tests first | Smallest deliverable / acceptance |
 | --- | --- | --- |
 | **1A — buildable foundation** | A shared behavior test runs on configured targets; platform launch smoke checks are repeatable. | Selected wrapper/configuration, small module layout, Android and iOS shells, desktop and web entry points, exact build/run/test commands and CI skeleton. No speculative feature modules. |
@@ -112,6 +120,6 @@ After each reported success, terminate the relevant process and reopen storage. 
 | Synchronized self-hosted accounts, ownership, conflicts, outbox/cursors/tombstones and recovery | 2A–2D, 4A |
 | Reader/snapshots/security, exports/imports, later integrations/content and P2 work | 1E, 3A–3D, 4A–4D |
 
-The desktop app now has a standalone quick-capture launch mode in 1C.
+The desktop app now has a standalone quick-capture launch mode in 1C. The shared Inbox and inline capture use the Stash light and dark palette. Wide Inbox windows show a detail pane for the selected capture.
 
-**Next task:** add the wide Inbox item detail pane in 1C. Sidebar navigation, theme coverage, and web quick-add also remain in 1C.
+**Next task:** audit the existing screens and components against the design system, starting with the standalone desktop quick-capture window. Then continue 1C with sidebar navigation and web quick-add.

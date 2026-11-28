@@ -1,5 +1,11 @@
 # Compatibility and CLI evidence
 
+## Stash design system and wide Inbox — 2026-11-28
+
+On the Pixel 10 emulator, the detail-pane assertion failed on the previous APK and passed on the new build. Selecting a stored item exposed a checked row and its original text in the detail pane. Resizing to compact kept the item visible and returning to wide restored the selection. A search that excluded the item cleared the old detail. The wide screen rendered the specified surface and list-pane colors in both system themes.
+
+Kotlin Toolchain builds passed for Android and iOS simulator. JVM tests passed (7/7) and iOS simulator tests passed (4/4). Logs are in `/private/tmp/stash-design-{android,jvm,ios-test,ios-build}-final.log`. Interactive checks covered Android. Keyboard focus traversal, interactive iOS and desktop behavior, and web were outside the verified coverage.
+
 ## Standalone desktop quick capture — 2026-11-28
 
 Kotlin Toolchain built the desktop module with `./kotlin build -m desktopApp`. The JVM suite passed with `./kotlin test -p jvm` (7/7). The desktop test rejects blank input, retains the draft on an injected write failure, checks capture identity on retry, and verifies rejection of concurrent saves and window close during the write. Output is in `/private/tmp/stash-quick-jvm-final.log`.

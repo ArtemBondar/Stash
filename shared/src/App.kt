@@ -1,10 +1,14 @@
 package org.example.stash
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -12,19 +16,28 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -32,6 +45,8 @@ import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -42,6 +57,24 @@ import kotlin.uuid.Uuid
 
 private val WideInboxWidth = 720.dp
 private val ContentPadding = 16.dp
+private val ElementSpacing = 8.dp
+private val MinimumTouchTarget = 48.dp
+private val RowShape = RoundedCornerShape(8.dp)
+
+private val LightColors = lightColorScheme(
+    surface = Color(0xFFFAFAF7), surfaceVariant = Color(0xFFF0F3EE),
+    onSurface = Color(0xFF1C2822), onSurfaceVariant = Color(0xFF48594F),
+    primary = Color(0xFF20593F), onPrimary = Color.White,
+    secondaryContainer = Color(0xFFD9EBDF), onSecondaryContainer = Color(0xFF173B29),
+    error = Color(0xFF9C2927),
+)
+private val DarkColors = darkColorScheme(
+    surface = Color(0xFF141916), surfaceVariant = Color(0xFF1E2722),
+    onSurface = Color(0xFFE5EEE7), onSurfaceVariant = Color(0xFFB3C5B9),
+    primary = Color(0xFFA4D7BA), onPrimary = Color(0xFF113826),
+    secondaryContainer = Color(0xFF2A4737), onSecondaryContainer = Color(0xFFDCF0E2),
+    error = Color(0xFFFFB4AB),
+)
 
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 @Composable
@@ -52,6 +85,7 @@ fun App(store: CaptureStore) {
     var refreshVersion by remember { mutableStateOf(0) }
     val generation = remember { InboxReadGeneration() }
     var entries by remember { mutableStateOf<List<Capture>>(emptyList()) }
+    var selectedId by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
     var loadFailed by remember { mutableStateOf(false) }
     var saved by remember { mutableStateOf(false) }
@@ -64,7 +98,10 @@ fun App(store: CaptureStore) {
         loadFailed = false
         try {
             val result = store.items(query)
-            generation.applyIfCurrent(request) { entries = result }
+            generation.applyIfCurrent(request) {
+                entries = result
+                if (selectedId != null && result.none { it.id == selectedId }) selectedId = null
+            }
         } catch (e: CancellationException) { throw e } catch (e: Exception) {
             if (generation.isCurrent(request)) loadFailed = true
         } finally {
@@ -109,21 +146,38 @@ fun App(store: CaptureStore) {
         loading = true
         refreshVersion++
     }
-    MaterialTheme {
-        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
-            if (maxWidth >= WideInboxWidth) {
-                Row(Modifier.fillMaxSize()) {
-                    Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(ContentPadding)) {
-                        CaptureEditor(text, edit, saving, saved, error, save)
+    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors) {
+        Surface(Modifier.fillMaxSize()) {
+            BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
+                if (maxWidth >= WideInboxWidth) {
+                    Row(Modifier.fillMaxSize()) {
+                        Column(Modifier.weight(1f).fillMaxSize().verticalScroll(rememberScrollState()).padding(ContentPadding), verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+                            CaptureEditor(text, edit, saving, saved, error, save)
+                        }
+                        LazyColumn(Modifier.weight(1.15f).fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant).padding(ContentPadding), verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+                            inboxContent(query, search, entries, loading, loadFailed, retry, selectedId) { selectedId = it }
+                        }
+                        Column(Modifier.weight(1.15f).fillMaxSize().padding(ContentPadding), verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+                            Text("Item details", style = MaterialTheme.typography.titleLarge)
+                            val selected = if (!loading && !loadFailed) entries.find { it.id == selectedId } else null
+                            if (selected != null) {
+                                key(selected.id) {
+                                    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+                                        SelectionContainer {
+                                            Text(selected.text, Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
+                                        }
+                                    }
+                                }
+                            } else if (!loading && !loadFailed) {
+                                Text("Select an item to view its details.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                     }
-                    LazyColumn(Modifier.weight(1f).fillMaxSize().padding(ContentPadding)) {
+                } else {
+                    LazyColumn(Modifier.fillMaxSize().padding(ContentPadding), verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+                        item { Column(verticalArrangement = Arrangement.spacedBy(ElementSpacing)) { CaptureEditor(text, edit, saving, saved, error, save) } }
                         inboxContent(query, search, entries, loading, loadFailed, retry)
                     }
-                }
-            } else {
-                LazyColumn(Modifier.fillMaxSize().padding(ContentPadding)) {
-                    item { CaptureEditor(text, edit, saving, saved, error, save) }
-                    inboxContent(query, search, entries, loading, loadFailed, retry)
                 }
             }
         }
@@ -135,7 +189,7 @@ private fun CaptureEditor(
     text: String, onTextChange: (String) -> Unit, saving: Boolean, saved: Boolean,
     error: String?, onSave: () -> Unit,
 ) {
-    Text("Quick capture", style = MaterialTheme.typography.headlineMedium)
+    Text("Quick capture", style = MaterialTheme.typography.titleLarge)
     OutlinedTextField(
         value = text,
         onValueChange = onTextChange,
@@ -148,8 +202,8 @@ private fun CaptureEditor(
             } else false
         },
     )
-    Text("Use Ctrl+Enter or Command+Enter to save", style = MaterialTheme.typography.bodySmall)
-    Button(enabled = !saving, onClick = onSave) { Text(if (saving) "Saving…" else "Save to Inbox") }
+    Text("Use Ctrl+Enter or Command+Enter to save", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Button(enabled = !saving, onClick = onSave, modifier = Modifier.heightIn(min = MinimumTouchTarget)) { Text(if (saving) "Saving…" else "Save to Inbox") }
     if (saved) Text("Saved locally")
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 }
@@ -157,18 +211,40 @@ private fun CaptureEditor(
 private fun LazyListScope.inboxContent(
     query: String, onQueryChange: (String) -> Unit, entries: List<Capture>,
     loading: Boolean, loadFailed: Boolean, onRetry: () -> Unit,
+    selectedId: String? = null, onSelect: ((String) -> Unit)? = null,
 ) {
     item {
-        Text("Inbox", style = MaterialTheme.typography.headlineMedium)
-        OutlinedTextField(value = query, onValueChange = onQueryChange, label = { Text("Search Inbox") }, modifier = Modifier.fillMaxWidth())
+        Column(verticalArrangement = Arrangement.spacedBy(ElementSpacing)) {
+            Text("Inbox", style = MaterialTheme.typography.titleLarge)
+            OutlinedTextField(value = query, onValueChange = onQueryChange, label = { Text("Search Inbox") }, modifier = Modifier.fillMaxWidth())
+        }
     }
     when {
         loading -> item { Text("Loading Inbox…") }
         loadFailed -> item {
             Text("Could not load Inbox.")
-            Button(onClick = onRetry) { Text("Retry") }
+            Button(onClick = onRetry, modifier = Modifier.heightIn(min = MinimumTouchTarget)) { Text("Retry") }
         }
         entries.isEmpty() -> item { Text(if (query.isEmpty()) "Your Inbox is empty." else "No matching items.") }
-        else -> items(entries, key = { it.id }) { item -> Text(item.text, Modifier.fillMaxWidth().padding(vertical = 8.dp)) }
+        else -> items(entries, key = { it.id }) { item ->
+            if (onSelect == null) {
+                Text(item.text, Modifier.fillMaxWidth().padding(vertical = ElementSpacing), style = MaterialTheme.typography.bodyLarge)
+            } else {
+                val selected = item.id == selectedId
+                val colors = MaterialTheme.colorScheme
+                Text(
+                    text = item.text,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = MinimumTouchTarget)
+                        .clip(RowShape)
+                        .background(if (selected) colors.secondaryContainer else Color.Transparent)
+                        .selectable(selected = selected, role = Role.Button, onClick = { onSelect(item.id) })
+                        .padding(horizontal = ElementSpacing, vertical = ElementSpacing),
+                    color = if (selected) colors.onSecondaryContainer else colors.onSurface,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
