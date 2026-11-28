@@ -1,5 +1,11 @@
 # Compatibility and CLI evidence
 
+## Adaptive Inbox and in-app capture — 2026-11-28
+
+The Pixel 10 emulator showed capture and search stacked in a narrow window and in separate columns in a wide window. The wide-layout assertion failed against the previous APK and passed with this increment. Resizing from wide to narrow preserved an entered draft and the active search. Tapping Save cleared the draft, displayed “Saved locally” and retained the search. Accessibility snapshots are in `/private/tmp/stash-adaptive-{red-layout,wide,final-compact,saved}.json`.
+
+Kotlin Toolchain checks passed: `./kotlin test -p jvm` (6/6), `./kotlin test -m shared -p iosSimulatorArm64`, `./kotlin build -p android` and `./kotlin build -p iosSimulatorArm64`. Logs are in `/private/tmp/stash-adaptive-{jvm-final,ios-test,android,ios-build}.log`. Interactive iOS and desktop layout behavior and the keyboard shortcut were not exercised in this increment.
+
 ## Offline Inbox search increment — 2026-11-28
 
 Search matches literal, case-insensitive substrings of original capture text and URLs within the local profile. A compiling behavioral test failed before implementation (`/private/tmp/stash-search-red-behavior.log`). Final checks passed: `./kotlin test -p jvm` (6/6), `./kotlin test -m shared -p iosSimulatorArm64` (4/4), `./kotlin build -p android` and `./kotlin build -p iosSimulatorArm64`. Real database assertions cover search before/after reopen, profile isolation, Unicode case matching, literal `%`/`_`, empty queries and no matches; a deterministic deferred-result test covers stale-result exclusion. Logs: `/private/tmp/stash-search-jvm-verified.log`, `/private/tmp/stash-search-ios-test.log`, `/private/tmp/stash-search-android-verified.log`, `/private/tmp/stash-search-ios-build.log`.
