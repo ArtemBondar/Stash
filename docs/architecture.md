@@ -101,3 +101,7 @@ The native Inbox reads the fixed local partition in chronological order and filt
 ### Adaptive Inbox and inline capture
 
 The shared screen stacks capture, search, and results in one scrolling list below 720 dp of available width. At wider sizes, capture and Inbox scroll independently side by side. Draft and query state stay above the layout switch. The Compose-only Android activity handles size changes directly so resizing does not discard that state. The inline editor uses a modified Enter shortcut and leaves ordinary Enter available for multiline input. Capture still saves locally before showing confirmation.
+
+### Standalone desktop quick capture
+
+The desktop application's `--quick-capture` argument opens a small Compose window with no Inbox view. It uses the same Room database, local profile and capture transaction as the library. The window closes after the save returns successfully and defers cancellation during the write. On failure, it retains the draft and reuses its capture identity when retrying the same text. Tray and global shortcut launchers are part of Phase 1D.

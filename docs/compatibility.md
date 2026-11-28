@@ -1,5 +1,11 @@
 # Compatibility and CLI evidence
 
+## Standalone desktop quick capture — 2026-11-28
+
+Kotlin Toolchain built the desktop module with `./kotlin build -m desktopApp`. The JVM suite passed with `./kotlin test -p jvm` (7/7). The desktop test rejects blank input, retains the draft on an injected write failure, checks capture identity on retry, and verifies rejection of concurrent saves and window close during the write. Output is in `/private/tmp/stash-quick-jvm-final.log`.
+
+The macOS development command reached Compose initialization against a disposable database. The desktop control interface could not attach to the Java window, so focus, keyboard and native IME behavior remain unverified. Windows and Linux were not exercised. This check uses the existing Room transaction and provides no new capture-latency measurements.
+
 ## Adaptive Inbox and in-app capture — 2026-11-28
 
 The Pixel 10 emulator showed capture and search stacked in a narrow window and in separate columns in a wide window. The wide-layout assertion failed against the previous APK and passed with this increment. Resizing from wide to narrow preserved an entered draft and the active search. Tapping Save cleared the draft, displayed “Saved locally” and retained the search. Accessibility snapshots are in `/private/tmp/stash-adaptive-{red-layout,wide,final-compact,saved}.json`.

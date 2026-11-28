@@ -112,4 +112,6 @@ After each reported success, terminate the relevant process and reopen storage. 
 | Synchronized self-hosted accounts, ownership, conflicts, outbox/cursors/tombstones and recovery | 2A–2D, 4A |
 | Reader/snapshots/security, exports/imports, later integrations/content and P2 work | 1E, 3A–3D, 4A–4D |
 
-**Next task:** implement the independent desktop quick capture window in 1C. Sidebar and detail, theme coverage, and web quick-add also remain part of 1C.
+The desktop app now has a standalone quick-capture launch mode in 1C.
+
+**Next task:** add the wide Inbox item detail pane in 1C. Sidebar navigation, theme coverage, and web quick-add also remain in 1C.

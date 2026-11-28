@@ -7,7 +7,8 @@ The application uses a fixed `local` database partition, not an account. Synchro
 The checked-in launchers pin Kotlin Toolchain 0.14.0. First use may download dependencies. Android needs an Android SDK; iOS needs macOS, Xcode and a simulator. From the project root:
 
 ```sh
-./kotlin run -m desktopApp
+./kotlin run -m desktopApp --no-compose-hot-reload
+./kotlin run -m desktopApp --no-compose-hot-reload -- --quick-capture
 ./kotlin run -m androidApp
 ./kotlin run -m iosApp -p iosSimulatorArm64
 ```
@@ -26,3 +27,5 @@ See [PRODUCT_SPEC.md](PRODUCT_SPEC.md) for the intended product and [docs/archit
 Inbox search runs entirely offline over original text, including URLs. It uses case-insensitive literal substring matching; `%` and `_` have no special meaning. It does not normalize accents or rank results. The current implementation loads the local inbox and filters it in Kotlin, which is simple but will need a scalable index for large inboxes.
 
 In narrow windows, quick capture and Inbox share one scrolling view. Wider windows show them side by side. Use **Save to Inbox** or press **Ctrl+Enter** (**Command+Enter** on macOS) in the capture editor. Enter on its own can add a line to a note.
+
+The standalone desktop window opens with the editor focused. Paste or type a link or note, use **Shift+Enter** for a new line, and press **Enter** to save locally and close. **Escape** cancels. If a save fails, the window keeps the draft available to retry.

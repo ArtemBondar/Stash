@@ -4,6 +4,7 @@ dependencies:
   - androidx.room3:room3-runtime:3.0.3
   - androidx.sqlite:sqlite-bundled:2.7.1
   - //shared
+  - $compose.material3
   - $compose.desktop.currentOs
   - $compose.preview
   - $libs.kotlinx.coroutines.swing
