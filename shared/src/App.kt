@@ -1,7 +1,6 @@
 package org.example.stash
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -25,8 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,21 +57,6 @@ private val ContentPadding = 16.dp
 private val ElementSpacing = 8.dp
 private val MinimumTouchTarget = 48.dp
 private val RowShape = RoundedCornerShape(8.dp)
-
-private val LightColors = lightColorScheme(
-    surface = Color(0xFFFAFAF7), surfaceVariant = Color(0xFFF0F3EE),
-    onSurface = Color(0xFF1C2822), onSurfaceVariant = Color(0xFF48594F),
-    primary = Color(0xFF20593F), onPrimary = Color.White,
-    secondaryContainer = Color(0xFFD9EBDF), onSecondaryContainer = Color(0xFF173B29),
-    error = Color(0xFF9C2927),
-)
-private val DarkColors = darkColorScheme(
-    surface = Color(0xFF141916), surfaceVariant = Color(0xFF1E2722),
-    onSurface = Color(0xFFE5EEE7), onSurfaceVariant = Color(0xFFB3C5B9),
-    primary = Color(0xFFA4D7BA), onPrimary = Color(0xFF113826),
-    secondaryContainer = Color(0xFF2A4737), onSecondaryContainer = Color(0xFFDCF0E2),
-    error = Color(0xFFFFB4AB),
-)
 
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 @Composable
@@ -146,7 +128,7 @@ fun App(store: CaptureStore) {
         loading = true
         refreshVersion++
     }
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors) {
+    StashTheme {
         Surface(Modifier.fillMaxSize()) {
             BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
                 if (maxWidth >= WideInboxWidth) {
