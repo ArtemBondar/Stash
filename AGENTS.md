@@ -7,6 +7,4 @@ Read PRODUCT_SPEC.md before changing code. Treat capture speed, data durability 
 - Implement small vertical slices, with tests and documentation. Keep secrets out of git; provide example configuration.
 - Document architectural decisions and tradeoffs. Ask before irreversible or scope-changing decisions. Do not silently omit requirements.
 - Review changes for correctness, privacy, accessibility, maintainability, error handling and offline behavior. Prefer human-readable code over cleverness.
-
-
 - Follow red/green/refactor for implementation.
