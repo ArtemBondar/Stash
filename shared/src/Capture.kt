@@ -8,6 +8,11 @@ data class Capture(val id: String, val text: String, val kind: CaptureKind, val 
 
 class CaptureConflict : IllegalStateException("This capture ID already belongs to different content. Copy your text and try again.")
 
+fun captureFailureMessage(error: Exception): String = when (error) {
+    is CaptureConflict -> "This capture could not be saved. Copy your text and start a new capture."
+    else -> "Could not save. Please try again."
+}
+
 fun classifyCapture(text: String): CaptureKind {
     require(text.isNotBlank()) { "Enter some text to save." }
     val standaloneUrl = Regex("(?i)^https?://[^\\s/]+(?:/[^\\s]*)?$")

@@ -110,7 +110,7 @@ fun App(store: CaptureStore) {
                 generation.invalidate()
                 loading = true
                 refreshVersion++
-            } catch (e: CancellationException) { throw e } catch (e: Exception) { error = "Could not save: ${e.message}" }
+            } catch (e: CancellationException) { throw e } catch (e: Exception) { error = captureFailureMessage(e) }
             finally { saving = false }
         }
     }
